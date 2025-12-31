@@ -1,0 +1,110 @@
+{
+  "nodes": [
+    {
+      "id": "pod-frontend",
+      "type": "Pod",
+      "name": "frontend-pod",
+      "namespace": "prod",
+      "criticality": "HIGH",
+      "labels": ["app=frontend"],
+      "metadata": {
+        "workloadType": "Deployment",
+        "cluster": "prod-cluster"
+      }
+    },
+    {
+      "id": "container-frontend",
+      "type": "Container",
+      "name": "frontend-container",
+      "namespace": "prod",
+      "criticality": "MEDIUM",
+      "metadata": {
+        "image": "registry.example.com/frontend:1.0",
+        "nodeName": "node-a"
+      }
+    },
+    {
+      "id": "secret-db",
+      "type": "Secret",
+      "name": "db-credentials",
+      "namespace": "prod",
+      "criticality": "HIGH",
+      "metadata": {
+        "secretType": "Opaque"
+      }
+    },
+    {
+      "id": "sa-frontend",
+      "type": "ServiceAccount",
+      "name": "frontend-sa",
+      "namespace": "prod",
+      "criticality": "MEDIUM",
+      "metadata": {
+        "roles": ["view", "edit"]
+      }
+    },
+    {
+      "id": "cred-cloud",
+      "type": "Credential",
+      "name": "cloud-admin",
+      "namespace": "global",
+      "criticality": "HIGH",
+      "metadata": {
+        "provider": "aws",
+        "scope": "cluster"
+      }
+    },
+    {
+      "id": "master-api",
+      "type": "Master",
+      "name": "kube-master",
+      "namespace": "control-plane",
+      "criticality": "HIGH",
+      "metadata": {
+        "apiServerVersion": "1.28.0"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "container-frontend",
+      "target": "pod-frontend",
+      "technique": "属于",
+      "evidence": "container spec parent",
+      "confidence": 0.9,
+      "sequence": 1
+    },
+    {
+      "source": "pod-frontend",
+      "target": "secret-db",
+      "technique": "挂载发现",
+      "evidence": "secret volume mounted",
+      "confidence": 0.8,
+      "sequence": 2
+    },
+    {
+      "source": "secret-db",
+      "target": "sa-frontend",
+      "technique": "权限发现",
+      "evidence": "service account token reuse",
+      "confidence": 0.6,
+      "sequence": 3
+    },
+    {
+      "source": "sa-frontend",
+      "target": "cred-cloud",
+      "technique": "RBAC权限利用",
+      "evidence": "list secrets + cloud creds",
+      "confidence": 0.7,
+      "sequence": 4
+    },
+    {
+      "source": "cred-cloud",
+      "target": "master-api",
+      "technique": "集群凭证获取",
+      "evidence": "cloud admin to kube master",
+      "confidence": 0.9,
+      "sequence": 5
+    }
+  ]
+}
