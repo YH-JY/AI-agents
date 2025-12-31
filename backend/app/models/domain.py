@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 
 
 class NodeType(str, Enum):
@@ -70,14 +70,13 @@ class AttackPathSearchRequest(BaseModel):
     max_depth: int = Field(6, alias="maxDepth", ge=1, le=8)
     limit: int = Field(5, ge=1, le=20)
 
-    @root_validator
-    def ensure_start(cls, values):
-        if not values.get("start_node_id") and not values.get("start_type"):
+    model_config = ConfigDict(populate_by_name=True)
+
+    @model_validator(mode="after")
+    def ensure_start(cls, values: "AttackPathSearchRequest"):
+        if not values.start_node_id and not values.start_type:
             raise ValueError("startNodeId or startType is required")
         return values
-
-    class Config:
-        allow_population_by_field_name = True
 
 
 class AttackPathSearchResponse(BaseModel):
@@ -91,8 +90,7 @@ class AssetFilter(BaseModel):
     page: int = Field(1, ge=1)
     page_size: int = Field(25, alias="pageSize", ge=1, le=100)
 
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class AssetSummary(BaseModel):
@@ -110,8 +108,7 @@ class AssetListResponse(BaseModel):
     page: int
     page_size: int = Field(alias="pageSize")
 
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class AssetDetailResponse(BaseModel):
