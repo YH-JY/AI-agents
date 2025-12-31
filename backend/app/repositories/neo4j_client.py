@@ -29,6 +29,13 @@ class Neo4jClient:
                 lambda tx: tx.run(query, parameters).data()
             )
 
+    def query(self, query: str, parameters: dict[str, Any] | None = None):
+        parameters = parameters or {}
+        with self._driver.session(database=self._database) as session:
+            return session.read_transaction(
+                lambda tx: list(tx.run(query, parameters))
+            )
+
     def write(self, query: str, parameters: dict[str, Any] | None = None):
         parameters = parameters or {}
         with self._driver.session(database=self._database) as session:

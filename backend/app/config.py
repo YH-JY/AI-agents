@@ -1,4 +1,6 @@
 from functools import lru_cache
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -13,6 +15,13 @@ class Settings(BaseSettings):
     request_timeout: float = Field(10.0, description="Neo4j request timeout seconds")
     enable_api_key: bool = Field(False, description="Require API key header if true")
     api_key: str | None = Field(None, description="Static API key in simple deployments")
+    storage_dir: str = Field("storage", description="Base directory for local storage")
+    kubeconfig_dir: str = Field(
+        "storage/kubeconfigs", description="Directory for uploaded kubeconfigs"
+    )
+    ingestion_job_retention_hours: int = Field(
+        24, description="How long to retain ingestion job records"
+    )
 
     class Config:
         env_file = ".env"
@@ -22,4 +31,7 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    Path(settings.storage_dir).mkdir(parents=True, exist_ok=True)
+    Path(settings.kubeconfig_dir).mkdir(parents=True, exist_ok=True)
+    return settings

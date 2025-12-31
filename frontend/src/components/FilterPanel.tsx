@@ -46,6 +46,13 @@ export const FilterPanel = ({ onSearch }: Props) => {
         initialValues={filters}
         onFinish={onFinish}
       >
+        <Form.Item name="queryMode" label="查询模式">
+          <Select>
+            <Select.Option value="standard">标准路径</Select.Option>
+            <Select.Option value="highValue">高价值目标</Select.Option>
+            <Select.Option value="shortest">最短路径</Select.Option>
+          </Select>
+        </Form.Item>
         <Form.Item name="startNodeId" label="起始节点 ID">
           <Input placeholder="pod-frontend" allowClear />
         </Form.Item>
@@ -60,6 +67,18 @@ export const FilterPanel = ({ onSearch }: Props) => {
         </Form.Item>
         <Form.Item name="targetType" label="目标类型">
           <Select allowClear>
+            {nodeTypeOptions.map((type) => (
+              <Select.Option key={type} value={type}>
+                {type}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item name="targetNodeId" label="目标节点 ID (最短路径)">
+          <Input placeholder="master-api" allowClear />
+        </Form.Item>
+        <Form.Item name="targetTypes" label="高价值目标类型">
+          <Select mode="multiple" allowClear>
             {nodeTypeOptions.map((type) => (
               <Select.Option key={type} value={type}>
                 {type}
@@ -84,7 +103,7 @@ export const FilterPanel = ({ onSearch }: Props) => {
       </Form>
       <Divider style={{ borderColor: "#1f2a44" }} />
       <Typography.Paragraph style={{ color: "#94a3b8" }}>
-        通过指定起点或类型，平台会自动返回限定深度内的攻击路径。
+        选择不同查询模式即可计算标准、多跳、高价值或最短攻击路径；缺省条件会按类型自动匹配。
       </Typography.Paragraph>
     </div>
   );

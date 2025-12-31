@@ -23,6 +23,7 @@ class AttackPathRepository:
         start_node_id: str | None,
         start_type: NodeType | None,
         target_type: NodeType | None,
+        target_types: list[NodeType] | None = None,
         namespace: str | None,
         max_depth: int,
         limit: int,
@@ -50,6 +51,9 @@ class AttackPathRepository:
         if target_type:
             target_filters.append("target.type = $targetType")
             params["targetType"] = target_type.value
+        if target_types:
+            target_filters.append("target.type IN $targetTypes")
+            params["targetTypes"] = [t.value for t in target_types]
         if namespace:
             target_filters.append("coalesce(target.namespace,'') = $namespace")
 
@@ -76,10 +80,60 @@ class AttackPathRepository:
         ORDER BY score DESC
         LIMIT $limit
         """
-        # remove maxDepth param to avoid unused warning
         params.pop("maxDepth", None)
         records = neo4j_client.execute(query, params)
         return [self._map_record(record) for record in records]
+
+    def search_high_value_paths(
+        self,
+        *,
+        start_node_id: str | None,
+        start_type: NodeType | None,
+        namespace: str | None,
+        max_depth: int,
+        limit: int,
+        target_types: list[NodeType],
+    ) -> list[AttackPath]:
+        return self.search_paths(
+            start_node_id=start_node_id,
+            start_type=start_type,
+            target_type=None,
+            target_types=target_types,
+            namespace=namespace,
+            max_depth=max_depth,
+            limit=limit,
+        )
+
+    def shortest_path(
+        self,
+        *,
+        start_node_id: str,
+        target_node_id: str,
+        max_depth: int,
+    ) -> list[AttackPath]:
+        depth_clause = max(1, min(max_depth, 12))
+        query = f"""
+        MATCH (start:Asset {{id: $startNodeId}}), (target:Asset {{id: $targetNodeId}})
+        CALL {{
+            WITH start, target
+            MATCH path = shortestPath((start)-[:ATTACK_REL*1..{depth_clause}]->(target))
+            RETURN path
+        }}
+        WITH path,
+        reduce(score = 0.0, rel IN relationships(path) |
+            score + coalesce(rel.confidence, 0.2) +
+            CASE endNode(rel).criticality
+                WHEN 'HIGH' THEN 2.0
+                WHEN 'MEDIUM' THEN 1.0
+                ELSE 0.5
+            END
+        ) AS score
+        RETURN path, score
+        """
+        records = neo4j_client.execute(
+            query, {"startNodeId": start_node_id, "targetNodeId": target_node_id}
+        )
+        return [self._map_record(record) for record in records if record.get("path")]
 
     def _map_record(self, record: dict[str, Any]) -> AttackPath:
         path: Path = record["path"]

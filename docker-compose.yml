@@ -25,10 +25,14 @@ services:
       - NEO4J_PASSWORD=neo4jpassword
       - NEO4J_DATABASE=neo4j
       - ENABLE_API_KEY=false
+      - STORAGE_DIR=/app/storage
+      - KUBECONFIG_DIR=/app/storage/kubeconfigs
     ports:
       - "8000:8000"
     depends_on:
       - neo4j
+    volumes:
+      - ./storage:/app/storage
 
   frontend:
     build:

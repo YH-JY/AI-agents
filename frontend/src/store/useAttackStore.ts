@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AttackPath, HealthStatus, NodeType } from "../types";
+import { AttackPath, HealthStatus } from "../types";
 import { AttackPathFilters } from "../services/api";
 
 interface AttackStoreState {
@@ -18,7 +18,7 @@ interface AttackStoreState {
 }
 
 export const useAttackStore = create<AttackStoreState>((set) => ({
-  filters: { maxDepth: 6, limit: 5, startType: "Pod" },
+  filters: { maxDepth: 6, limit: 5, startType: "Pod", queryMode: "standard" },
   paths: [],
   loading: false,
   selectedPathId: undefined,

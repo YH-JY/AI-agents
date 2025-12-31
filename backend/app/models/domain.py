@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 
 class NodeType(str, Enum):
@@ -47,6 +47,7 @@ class AttackEdge(BaseModel):
     evidence: str | None = None
     confidence: float | None = None
     sequence: int | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class AttackStep(BaseModel):
@@ -81,6 +82,34 @@ class AttackPathSearchRequest(BaseModel):
 
 class AttackPathSearchResponse(BaseModel):
     paths: list[AttackPath]
+
+
+class ShortestPathRequest(BaseModel):
+    start_node_id: str = Field(alias="startNodeId")
+    target_node_id: str = Field(alias="targetNodeId")
+    max_depth: int = Field(8, alias="maxDepth", ge=1, le=12)
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class HighValuePathRequest(BaseModel):
+    start_node_id: str | None = Field(None, alias="startNodeId")
+    start_type: NodeType | None = Field(None, alias="startType")
+    namespace: str | None = None
+    max_depth: int = Field(6, alias="maxDepth", ge=1, le=8)
+    limit: int = Field(5, ge=1, le=20)
+    target_types: list[NodeType] = Field(
+        default_factory=lambda: [NodeType.MASTER, NodeType.CREDENTIAL],
+        alias="targetTypes",
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    @model_validator(mode="after")
+    def ensure_start(cls, values: "HighValuePathRequest"):
+        if not values.start_node_id and not values.start_type:
+            raise ValueError("startNodeId or startType is required")
+        return values
 
 
 class AssetFilter(BaseModel):

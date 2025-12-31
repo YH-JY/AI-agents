@@ -15,6 +15,7 @@ def normalize_properties(node: dict) -> dict:
         "criticality": node.get("criticality", "MEDIUM"),
         "labels": node.get("labels", []),
         "type": node["type"],
+        "cluster": metadata.get("cluster"),
         **flattened,
     }
 

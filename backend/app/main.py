@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.core.logger import configure_logging
 from app.repositories.neo4j_client import neo4j_client
-from app.routers import attack_paths, assets, system
+from app.routers import attack_paths, assets, system, ingestion, cypher
 
 configure_logging()
 settings = get_settings()
@@ -21,6 +21,8 @@ app.add_middleware(
 app.include_router(system.router)
 app.include_router(attack_paths.router)
 app.include_router(assets.router)
+app.include_router(ingestion.router)
+app.include_router(cypher.router)
 
 
 @app.on_event("shutdown")

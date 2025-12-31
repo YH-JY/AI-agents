@@ -9,9 +9,18 @@ body {
   min-height: 100vh;
 }
 
-.app-shell {
+.app-shell-vertical {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  padding: 16px;
+  gap: 16px;
+}
+
+.path-layout {
+  display: flex;
+  gap: 16px;
+  min-height: 70vh;
 }
 
 .sidebar {
@@ -20,6 +29,7 @@ body {
   padding: 16px;
   overflow-y: auto;
   border-right: 1px solid #1f2a44;
+  border-radius: 8px;
 }
 
 .graph-container {
@@ -41,4 +51,26 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.panel-header {
+  margin-bottom: 12px;
+}
+
+.path-cards {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.path-card {
+  min-width: 220px;
+  background-color: #111c3a;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.path-card.selected {
+  border-color: #38bdf8;
 }
