@@ -57,10 +57,11 @@ class AttackPathRepository:
         if target_filters:
             target_where = "WHERE " + " AND ".join(target_filters)
 
+        depth_clause = max(1, min(max_depth, 8))
         query = f"""
         MATCH (start:Asset)
         {where_clause}
-        MATCH path = (start)-[rels:ATTACK_REL*1..$maxDepth]->(target:Asset)
+        MATCH path = (start)-[rels:ATTACK_REL*1..{depth_clause}]->(target:Asset)
         {target_where}
         WITH path,
         reduce(score = 0.0, rel IN relationships(path) |
@@ -75,6 +76,8 @@ class AttackPathRepository:
         ORDER BY score DESC
         LIMIT $limit
         """
+        # remove maxDepth param to avoid unused warning
+        params.pop("maxDepth", None)
         records = neo4j_client.execute(query, params)
         return [self._map_record(record) for record in records]
 
