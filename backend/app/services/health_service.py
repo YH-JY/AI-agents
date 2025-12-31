@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from neo4j import Neo4jError
+from neo4j.exceptions import Neo4jError
 
 from app.config import get_settings
 from app.core.logger import logger
