@@ -18,9 +18,9 @@
 - **模块能力**  
   1. **K8s Collector**：基于 Kubernetes Python Client 分模块收集 Node/Pod/.../Secret，自动推导 Container、Volume、Credential 节点与攻击关系。  
   2. **Graph Writer**：Bolt 批写 Neo4j，提供 full-sync (清理 cluster 节点) 与 incremental。  
-  3. **Attack Path 服务**：标准搜索、面向 Master/Credential 的高价值搜索、指定起止点的最短路径。  
-  4. **Cypher API**：`/api/cypher/execute` 支持只读查询，自动阻止 CREATE/MERGE/LOAD/DELETE 等语句。  
-  5. **前端子系统**：Tab 布局（攻击路径 / 资产采集 / Cypher 控制台）、路径卡片、Cytoscape DAG、资产检索、任务表格。  
+  3. **Attack Path 服务**：标准搜索、面向 Master/Credential 的高价值搜索、指定起止点的最短路径，若搜索为空可自动 fallback 到高价值路径。  
+  4. **Cypher API**：`/api/cypher/execute` 支持只读查询，自动阻止 CREATE/MERGE/LOAD/DELETE 等语句，并将结果用于 Wiz 风格 DAG 渲染。  
+  5. **前端子系统**：Tab 布局（攻击路径 / 资产采集 / Cypher 控制台）、资产统计卡片、路径卡片、Cytoscape DAG、资产检索、任务表格。  
 - **验收标准**  
   - 上传 kubeconfig 后可在 2 分钟内完成 1k Pods 的全量写入；任务状态与日志实时更新。  
   - 攻击路径查询 ≤2s，并按模式返回对应路径集合。  
@@ -69,7 +69,7 @@
 | POST | `/api/attack-paths/search` | 标准路径查询 |
 | POST | `/api/attack-paths/high-value` | 针对目标类型列表（默认 Master/Credential） |
 | POST | `/api/attack-paths/shortest` | 指定起止节点最短路径 |
-| POST | `/api/cypher/execute` | 执行只读 Cypher，返回 nodes/edges/table |
+| POST | `/api/cypher/execute` | 执行只读 Cypher，返回 nodes/edges |
 | GET | `/api/assets`, `/api/assets/{id}` | 资产检索与详情 |
 | GET | `/api/system/health` | Neo4j + 版本信息 |
 - **安全**：全部接口可配置 `X-API-Key`；Cypher 请求在服务端阻断 CREATE/DELETE/MERGE/LOAD/CALL。  
@@ -77,14 +77,14 @@
 
 ## Phase 7. Frontend Interaction & Visualization
 - **结构**：Tabs（攻击路径 / 资产采集 / Cypher 控制台）。  
-  - *攻击路径 Tab*: 左侧 FilterPanel（模式/起点/目标/namespace/maxDepth/limit），右侧路径卡片 + Cytoscape DAG + AssetList + Path drawer。  
+  - *攻击路径 Tab*: 左侧 FilterPanel（模式/起点/目标/namespace/maxDepth/limit），顶部资产统计卡片，右侧路径卡片 + Cytoscape DAG + AssetList + Path drawer。  
   - *资产采集 Tab*: Upload.Dragger + kubeconfig 列表（可选择并运行全量/增量模式）+ Job Table。  
-  - *Cypher 控制台*: TextArea + 模板按钮 + 执行结果（Cytoscape + 表格）。  
+  - *Cypher 控制台*: TextArea + 模板按钮 + 只读 Wiz 风格图谱（无表格）。  
 - **可视化**：`breadthfirst` orientation=LR，节点颜色（Pod 蓝、Container 青、Secret 紫、Credential 黄、Master 红、Node 绿、ServiceAccount 橙、Volume 深紫），边 label=攻击技术；禁用力导向。  
 - **交互**：  
   - 路径卡片点击高亮；节点点击打开详情抽屉。  
   - AssetList 点击将 asset.id 作为 startNodeId 重新查询。  
-  - Cypher 结果 Graph/表同步，空状态有提示。  
+  - Cypher 结果 Graph 展示，与 Neo4j Browser 一致并提示节点/边数量。  
   - Job 列表 10s 轮询。  
 - **状态**：Zustand 管理 filters/paths/loading/health；消息提示依托 Ant `message`。
 
@@ -95,7 +95,7 @@
   - `cypher_repository/service` 提供只读 Cypher 执行与节点/关系聚合；`/api/cypher/execute` 返回 Graph + table。  
   - `requirements.txt` 新增 kubernetes / PyYAML / python-multipart；`docker-compose` 为 backend 挂载 storage volume。  
 - **前端**  
-  - `App.tsx` 改为 Tab 布局；路径 Tab 含 FilterPanel+AttackGraph+AssetList，资产采集 Tab (`IngestionPanel`) 管理上传/任务，Cypher Tab (`CypherConsole` + `CypherGraph`)。  
+  - `App.tsx` 改为 Tab 布局；路径 Tab 含 FilterPanel、资产统计卡片、AttackGraph 与 AssetList；资产采集 Tab (`IngestionPanel`) 管理上传/任务；Cypher Tab (`CypherConsole` + `CypherGraph`) 仅返回 DAG。  
   - Filter 支持查询模式 (standard/highValue/shortest)、目标节点 ID、目标类型列表。  
   - 新服务函数：采集 API、Custom Cypher、Shortest/High-Value path 查询。  
   - 样式更新：`.app-shell-vertical`, `.path-layout`, `.path-card` 等保障布局。  

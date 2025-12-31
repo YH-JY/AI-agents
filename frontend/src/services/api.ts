@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   AttackPathResponse,
   AssetListResponse,
+  AssetStatsResponse,
   CypherResult,
   GraphQueryPayload,
   HealthStatus,
@@ -75,6 +76,11 @@ export const fetchAssets = async (params: {
 
 export const fetchHealth = async (): Promise<HealthStatus> => {
   const { data } = await api.get<HealthStatus>("/api/system/health");
+  return data;
+};
+
+export const fetchAssetStats = async (): Promise<AssetStatsResponse> => {
+  const { data } = await api.get<AssetStatsResponse>("/api/assets/stats/summary");
   return data;
 };
 

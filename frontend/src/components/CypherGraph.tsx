@@ -61,21 +61,30 @@ export const CypherGraph = ({ nodes, edges }: Props) => {
     const cy = cyRef.current;
     if (!cy) return;
     cy.elements().remove();
-    const nodeElements = nodes.map((node) => ({
-      data: {
-        id: node.id,
-        label: node.name ?? node.id,
-        type: node.type ?? node.labels?.[0]
-      }
-    }));
-    const edgeElements = edges.map((edge) => ({
-      data: {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        label: edge.type
-      }
-    }));
+    const nodeElements = nodes.map((node) => {
+      const nodeType = node.type ?? (node.labels?.[0] as string | undefined);
+      return {
+        data: {
+          id: node.id,
+          label: node.name ? `${node.name}\n(${nodeType ?? ""})` : node.id,
+          type: nodeType
+        }
+      };
+    });
+    const edgeElements = edges.map((edge) => {
+      const technique =
+        typeof edge.properties.technique === "string"
+          ? edge.properties.technique
+          : edge.type;
+      return {
+        data: {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          label: technique
+        }
+      };
+    });
     cy.add([...nodeElements, ...edgeElements]);
     cy.layout({
       name: "breadthfirst",

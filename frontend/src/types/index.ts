@@ -67,6 +67,15 @@ export interface AssetListResponse {
   pageSize: number;
 }
 
+export interface AssetStats {
+  type: NodeType;
+  total: number;
+}
+
+export interface AssetStatsResponse {
+  stats: AssetStats[];
+}
+
 export interface KubeConfigMetadata {
   id: string;
   name: string;

@@ -76,7 +76,7 @@ class AttackPathSearchRequest(BaseModel):
     @model_validator(mode="after")
     def ensure_start(cls, values: "AttackPathSearchRequest"):
         if not values.start_node_id and not values.start_type:
-            raise ValueError("startNodeId or startType is required")
+            values.start_type = NodeType.POD
         return values
 
 
@@ -108,8 +108,17 @@ class HighValuePathRequest(BaseModel):
     @model_validator(mode="after")
     def ensure_start(cls, values: "HighValuePathRequest"):
         if not values.start_node_id and not values.start_type:
-            raise ValueError("startNodeId or startType is required")
+            values.start_type = NodeType.POD
         return values
+
+
+class AssetStats(BaseModel):
+    type: NodeType
+    total: int
+
+
+class AssetStatsResponse(BaseModel):
+    stats: list[AssetStats]
 
 
 class AssetFilter(BaseModel):

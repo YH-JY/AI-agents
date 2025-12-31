@@ -7,6 +7,7 @@ import { HealthIndicator } from "./components/HealthIndicator";
 import { PathSummaryDrawer } from "./components/PathSummaryDrawer";
 import { IngestionPanel } from "./components/IngestionPanel";
 import { CypherConsole } from "./components/CypherConsole";
+import { AssetStatsOverview } from "./components/AssetStats";
 import { useAttackStore } from "./store/useAttackStore";
 import {
   fetchHealth,
@@ -85,6 +86,11 @@ const App = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    handleSearch(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const selectedPath = paths.find((path) => path.id === selectedPathId);
 
   const pathTab = (
@@ -95,6 +101,9 @@ const App = () => {
           <Typography.Text style={{ color: "#94a3b8" }}>
             根据过滤条件自动计算或筛选攻击路径
           </Typography.Text>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <AssetStatsOverview />
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <div style={{ flex: 1 }}>

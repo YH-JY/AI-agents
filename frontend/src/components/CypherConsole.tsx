@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Input, message, Space, Table, Typography } from "antd";
+import { Button, Card, Input, message, Space, Typography } from "antd";
 import { executeCypher } from "../services/api";
 import { CypherResult } from "../types";
 import { CypherGraph } from "./CypherGraph";
@@ -61,35 +61,20 @@ export const CypherConsole = () => {
         </Button>
       </Card>
 
-      {result && (
-        <>
-          <Card title="图谱结果">
-            <CypherGraph nodes={result.nodes} edges={result.edges} />
-          </Card>
-          <Card title="表格">
-            <Table
-              dataSource={result.table}
-              rowKey={(_, idx) => idx.toString()}
-              pagination={false}
-              columns={
-                result.table.length
-                  ? Object.keys(result.table[0]).map((key) => ({
-                      title: key,
-                      dataIndex: key,
-                      render: (value: unknown) =>
-                        typeof value === "object"
-                          ? JSON.stringify(value)
-                          : String(value)
-                    }))
-                  : [{ title: "结果", dataIndex: "result" }]
-              }
-            />
-          </Card>
-        </>
-      )}
-      {!result && (
+      {result ? (
+        <Card
+          title="图谱结果"
+          extra={
+            <Typography.Text style={{ color: "#94a3b8" }}>
+              {result.nodes.length} 节点 · {result.edges.length} 关系
+            </Typography.Text>
+          }
+        >
+          <CypherGraph nodes={result.nodes} edges={result.edges} />
+        </Card>
+      ) : (
         <Typography.Paragraph style={{ color: "#94a3b8" }}>
-          输入查询后将同时展示图谱与表格结果。
+          输入查询后将返回与 Neo4j Browser 一致的子图，可用于验证攻击路径。
         </Typography.Paragraph>
       )}
     </Space>

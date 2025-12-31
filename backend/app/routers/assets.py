@@ -5,6 +5,7 @@ from app.models.domain import (
     AssetDetailResponse,
     AssetFilter,
     AssetListResponse,
+    AssetStatsResponse,
     NodeType,
 )
 from app.services.asset_service import asset_service
@@ -32,6 +33,11 @@ async def list_assets(
         page_size=page_size,
     )
     return asset_service.list_assets(filters)
+
+
+@router.get("/stats/summary", response_model=AssetStatsResponse)
+async def asset_stats():
+    return asset_service.get_stats()
 
 
 @router.get("/{asset_id}", response_model=AssetDetailResponse)

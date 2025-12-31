@@ -28,6 +28,9 @@ export const FilterPanel = ({ onSearch }: Props) => {
   }, [filters, form]);
 
   const onFinish = (values: AttackPathFilters) => {
+    if (values.queryMode === "highValue" && !values.targetTypes?.length) {
+      values.targetTypes = ["Master", "Credential"];
+    }
     onSearch({
       ...values,
       maxDepth: values.maxDepth ? Number(values.maxDepth) : undefined,

@@ -19,9 +19,10 @@ Then open http://localhost:5173 to explore attack paths.
 ## Features
 
 - **Kubernetes 资产采集**：在“资产采集”页上传 kubeconfig，选择全量/增量模式后即可触发 Collector。采集任务状态（队列/运行/成功/失败）及日志都会展示在页面上。
+- **资产概览**：攻击路径页顶部展示 Pod/ServiceAccount/Secret 等类型资产数量，便于确认采集结果。
 - **Neo4j 图谱写入**：Collector 将 Node/Pod/Container/ServiceAccount/Secret/Master/Credential/Volume 映射为 `Asset` 节点，并依据攻击技术枚举写入 `ATTACK_REL`。
 - **攻击路径分析**：前端支持标准搜索、高价值目标（默认 Master/Credential）以及最短路径三种模式，路径图采用左→右 DAG 布局并可点击查看节点详情。
-- **Cypher 控制台**：安全人员可直接执行只读 Cypher 查询（自动拦截包含 CREATE/MERGE 等写操作的语句），结果以图谱 + 表格双视图展示。
+- **Cypher 控制台**：安全人员可直接执行只读 Cypher 查询（自动拦截包含 CREATE/MERGE 等写操作的语句），结果以 Wiz 风格 DAG 图谱展示，与 Neo4j Browser 子图一致。
 - **自定义查询**：资产列表可快速定位节点并触发路径计算；API 暴露 `/api/cypher/execute`、`/api/ingestion/*` 等接口供自动化集成。
 
 ## Kubernetes 采集步骤

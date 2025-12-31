@@ -5,6 +5,7 @@ from app.models.domain import (
     AttackPathSearchRequest,
     AttackPathSearchResponse,
     HighValuePathRequest,
+    NodeType,
     ShortestPathRequest,
 )
 from app.repositories.attack_path_repository import attack_path_repository
@@ -21,6 +22,16 @@ class AttackPathService:
             max_depth=params.max_depth,
             limit=params.limit,
         )
+        if not paths:
+            fallback_targets = [NodeType.MASTER, NodeType.CREDENTIAL]
+            paths = attack_path_repository.search_high_value_paths(
+                start_node_id=params.start_node_id,
+                start_type=params.start_type or NodeType.POD,
+                namespace=params.namespace,
+                max_depth=params.max_depth,
+                limit=max(5, params.limit),
+                target_types=fallback_targets,
+            )
         return AttackPathSearchResponse(paths=paths)
 
     def search_high_value(self, params: HighValuePathRequest) -> AttackPathSearchResponse:

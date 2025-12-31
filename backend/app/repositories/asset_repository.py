@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from app.core.logger import logger
 from app.models.domain import (
     AssetDetailResponse,
     AssetFilter,
     AssetNode,
+    AssetStats,
     AssetSummary,
     AttackEdge,
     NodeType,
@@ -119,6 +121,24 @@ class AssetRepository:
             inbound_edges=inbound_edges,
             outbound_edges=outbound_edges,
         )
+
+    def get_asset_stats(self) -> list[AssetStats]:
+        query = """
+        MATCH (n:Asset)
+        RETURN n.type AS type, count(n) AS total
+        """
+        records = neo4j_client.execute(query, {})
+        stats: list[AssetStats] = []
+        for record in records:
+            node_type = record.get("type")
+            total = record.get("total")
+            if not node_type or total is None:
+                continue
+            try:
+                stats.append(AssetStats(type=NodeType(node_type), total=total))
+            except ValueError:
+                logger.warning("Unknown node type in stats: %s", node_type)
+        return stats
 
     def _node_from(self, node) -> AssetNode:
         metadata = dict(node)
